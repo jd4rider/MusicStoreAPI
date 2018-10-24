@@ -33,11 +33,28 @@ namespace MusicStore
             services.AddDbContext<MusicStoreContext>(options =>
                 options.UseSqlite("Data Source=MusicStore.db"));
 
+
+            services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+            {
+                builder.AllowAnyMethod()
+                       .AllowAnyHeader()
+                       .AllowCredentials()
+                       .WithOrigins("http://localhost:8080");
+            }));
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+
+
+            app.UseCors("MyPolicy");
+
             app.Use(async (context, next) =>
             {
                 await next();
@@ -55,14 +72,7 @@ namespace MusicStore
 
             app.UseDefaultFiles();
             app.UseStaticFiles();
-
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
-            app.UseCors(builder =>
-                 builder.WithOrigins("http://localhost:8080"));
+            
 
             app.UseMvc();
         }
